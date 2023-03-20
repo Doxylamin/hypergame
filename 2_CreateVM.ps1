@@ -9,7 +9,6 @@ $params = @{
   CPUCores                        = 4
   NetworkSwitch                   = "GameSwitch"
   VHDPath                         = "C:\HyperGame\VMStorage\"
-  GameStorageDisk                 = "game-core.vhdx"
   UnattendPath                    = "$PSScriptRoot" + "\autounattend.xml"
   GPUName                         = "AUTO"
   GPUResourceAllocationPercentage = 50
@@ -174,7 +173,7 @@ Function SetupParsecInstall {
   Copy-Item -Path $psscriptroot\scripts\VMScripts\ParsecVDDInstall.ps1 -Destination $DriveLetter\ProgramData\HyperGame
   Copy-Item -Path $psscriptroot\scripts\VMScripts\ParsecPublic.cer -Destination $DriveLetter\ProgramData\HyperGame
   Copy-Item -Path $psscriptroot\scripts\VMScripts\Parsec.lnk -Destination $DriveLetter\ProgramData\HyperGame
-  Copy-Item -Path $psscriptroot\scripts\VMScripts\NiniteInstall.ps1 -Destination $DriveLetter\ProgramData\HyperGame
+  Copy-Item -Path $psscriptroot\scripts\VMScripts\InitialSetup.ps1 -Destination $DriveLetter\ProgramData\HyperGame
   Copy-Item -Path $psscriptroot\scripts\gpt.ini -Destination $DriveLetter\Windows\system32\GroupPolicy
   Copy-Item -Path $psscriptroot\scripts\User\psscripts.ini -Destination $DriveLetter\Windows\system32\GroupPolicy\User\Scripts
   Copy-Item -Path $psscriptroot\scripts\User\Install.ps1 -Destination $DriveLetter\Windows\system32\GroupPolicy\User\Scripts\Logon
@@ -4262,6 +4261,7 @@ Function GetVMCredentials {
     [string]$username,
     [string]$password
   )
+  Set-VM -Name $VMName -Notes "$GPUResourceAllocationPercentage % GPU - Username: $username - Password: $password"
   Write-Host "Created Virtual Machine $VMName with a $GPUResourceAllocationPercentage % GPU slice"
   Write-Host "Username: $username"
   Write-Host "Password: $password"

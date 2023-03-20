@@ -1,31 +1,31 @@
 ﻿param(
-$team_id,
-$key
+  $team_id,
+  $key
 )
 
-while(!(Test-NetConnection Google.com).PingSucceeded){
-    Start-Sleep -Seconds 1
-    }
+while (!(Test-NetConnection Google.com).PingSucceeded) {
+  Start-Sleep -Seconds 1
+}
 
 Get-ChildItem -Path C:\ProgramData\HyperGame -Recurse | Unblock-File
 
 if (Test-Path HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Parsec) {}
 else {
     (New-Object System.Net.WebClient).DownloadFile("https://builds.parsecgaming.com/package/parsec-windows.exe", "C:\Users\$env:USERNAME\Downloads\parsec-windows.exe")
-    Start-Process "C:\Users\$env:USERNAME\Downloads\parsec-windows.exe" -ArgumentList "/silent", "/shared","/team_id=$team_id","/team_computer_key=$key" -wait
-    While (!(Test-Path C:\ProgramData\Parsec\config.txt)){
-        Start-Sleep -s 1
-    }
-    Stop-Process parsecd -Force
-    $configfile = Get-Content C:\ProgramData\Parsec\config.txt
-    $configfile += "host_virtual_monitors = 1"
-    $configfile += "host_privacy_mode = 1"
-    $configfile | Out-File C:\ProgramData\Parsec\config.txt -Encoding ascii
-    Copy-Item -Path "C:\ProgramData\HyperGame\Parsec.lnk" -Destination "C:\Users\Public\Desktop"
+  Start-Process "C:\Users\$env:USERNAME\Downloads\parsec-windows.exe" -ArgumentList "/silent", "/shared", "/team_id=$team_id", "/team_computer_key=$key" -wait
+  While (!(Test-Path C:\ProgramData\Parsec\config.txt)) {
+    Start-Sleep -s 1
+  }
+  Stop-Process parsecd -Force
+  $configfile = Get-Content C:\ProgramData\Parsec\config.txt
+  $configfile += "host_virtual_monitors = 1"
+  $configfile += "host_privacy_mode = 1"
+  $configfile | Out-File C:\ProgramData\Parsec\config.txt -Encoding ascii
+  Copy-Item -Path "C:\ProgramData\HyperGame\Parsec.lnk" -Destination "C:\Users\Public\Desktop"
 }
 
 Function ParsecVDDMonitorSetupScheduledTask {
-$XML = @"
+  $XML = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
@@ -74,17 +74,17 @@ $XML = @"
 </Task>
 "@
 
-    try {
-        Get-ScheduledTask -TaskName "Monitor Parsec VDD State" -ErrorAction Stop | Out-Null
-        Unregister-ScheduledTask -TaskName "Monitor Parsec VDD State" -Confirm:$false
-        }
-    catch {}
-    $action = New-ScheduledTaskAction -Execute 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument '-file %programdata%\HyperGame\VDDMonitor.ps1'
-    $trigger =  New-ScheduledTaskTrigger -AtStartup
-    Register-ScheduledTask -XML $XML -TaskName "Monitor Parsec VDD State" | Out-Null
-    }
+  try {
+    Get-ScheduledTask -TaskName "Monitor Parsec VDD State" -ErrorAction Stop | Out-Null
+    Unregister-ScheduledTask -TaskName "Monitor Parsec VDD State" -Confirm:$false
+  }
+  catch {}
+  $action = New-ScheduledTaskAction -Execute 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument '-file %programdata%\HyperGame\VDDMonitor.ps1'
+  $trigger = New-ScheduledTaskTrigger -AtStartup
+  Register-ScheduledTask -XML $XML -TaskName "Monitor Parsec VDD State" | Out-Null
+}
 Function VBCableInstallSetupScheduledTask {
-$XML = @"
+  $XML = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
@@ -133,22 +133,22 @@ $XML = @"
 </Task>
 "@
 
-    try {
-        Get-ScheduledTask -TaskName "Install VB Cable" -ErrorAction Stop | Out-Null
-        Unregister-ScheduledTask -TaskName "Install VB Cable" -Confirm:$false
-        }
-    catch {}
-    $action = New-ScheduledTaskAction -Execute 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument '-file %programdata%\HyperGame\VBCableInstall.ps1'
-    $trigger =  New-ScheduledTaskTrigger -AtStartup
-    Register-ScheduledTask -XML $XML -TaskName "Install VB Cable" | Out-Null
-    }
-Function NiniteInstallSetupScheduledTask {
-$XML = @"
+  try {
+    Get-ScheduledTask -TaskName "Install VB Cable" -ErrorAction Stop | Out-Null
+    Unregister-ScheduledTask -TaskName "Install VB Cable" -Confirm:$false
+  }
+  catch {}
+  $action = New-ScheduledTaskAction -Execute 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument '-file %programdata%\HyperGame\VBCableInstall.ps1'
+  $trigger = New-ScheduledTaskTrigger -AtStartup
+  Register-ScheduledTask -XML $XML -TaskName "Install VB Cable" | Out-Null
+}
+Function InitialSetupScheduledTask {
+  $XML = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Description>Install Ninite</Description>
-    <URI>\Install Ninite</URI>
+    <Description>Initial Virtual Machine Setup</Description>
+    <URI>\Initial Virtual Machine Setup</URI>
   </RegistrationInfo>
   <Triggers>
     <LogonTrigger>
@@ -186,23 +186,23 @@ $XML = @"
   <Actions Context="Author">
     <Exec>
       <Command>C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe</Command>
-      <Arguments>-file %programdata%\HyperGame\NiniteInstall.ps1</Arguments>
+      <Arguments>-file %programdata%\HyperGame\InitialSetup.ps1</Arguments>
     </Exec>
   </Actions>
 </Task>
 "@
 
-    try {
-        Get-ScheduledTask -TaskName "Install Ninite" -ErrorAction Stop | Out-Null
-        Unregister-ScheduledTask -TaskName "Install Ninite" -Confirm:$false
-        }
-    catch {}
-    $action = New-ScheduledTaskAction -Execute 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument '-file %programdata%\HyperGame\NiniteInstall.ps1'
-    $trigger =  New-ScheduledTaskTrigger -AtStartup
-    Register-ScheduledTask -XML $XML -TaskName "Install Ninite" | Out-Null
-    }
+  try {
+    Get-ScheduledTask -TaskName "Initial Virtual Machine Setup" -ErrorAction Stop | Out-Null
+    Unregister-ScheduledTask -TaskName "Initial Virtual Machine Setup" -Confirm:$false
+  }
+  catch {}
+  $action = New-ScheduledTaskAction -Execute 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument '-file %programdata%\HyperGame\InitialSetup.ps1'
+  $trigger = New-ScheduledTaskTrigger -AtStartup
+  Register-ScheduledTask -XML $XML -TaskName "Initial Virtual Machine Setup" | Out-Null
+}
 Function ParsecVDDInstallSetupScheduledTask {
-$XML = @"
+  $XML = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
@@ -251,22 +251,22 @@ $XML = @"
 </Task>
 "@
 
-    try {
-        Get-ScheduledTask -TaskName "Install Parsec Virtual Display Driver" -ErrorAction Stop | Out-Null
-        Unregister-ScheduledTask -TaskName "Install Parsec Virtual Display Driver" -Confirm:$false
-        }
-    catch {}
-    $action = New-ScheduledTaskAction -Execute 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument '-file %programdata%\HyperGame\ParsecVDDInstall.ps1'
-    $trigger =  New-ScheduledTaskTrigger -AtStartup
-    Register-ScheduledTask -XML $XML -TaskName "Install Parsec Virtual Display Driver" | Out-Null
-    }
+  try {
+    Get-ScheduledTask -TaskName "Install Parsec Virtual Display Driver" -ErrorAction Stop | Out-Null
+    Unregister-ScheduledTask -TaskName "Install Parsec Virtual Display Driver" -Confirm:$false
+  }
+  catch {}
+  $action = New-ScheduledTaskAction -Execute 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe' -Argument '-file %programdata%\HyperGame\ParsecVDDInstall.ps1'
+  $trigger = New-ScheduledTaskTrigger -AtStartup
+  Register-ScheduledTask -XML $XML -TaskName "Install Parsec Virtual Display Driver" | Out-Null
+}
 
 ParsecVDDMonitorSetupScheduledTask
 VBCableInstallSetupScheduledTask
-NiniteInstallSetupScheduledTask
+InitialSetupScheduledTask
 ParsecVDDInstallSetupScheduledTask
 
 Start-ScheduledTask -TaskName "Install VB Cable"
 Start-ScheduledTask -TaskName "Install Parsec Virtual Display Driver"
-Start-ScheduledTask -TaskName "Install Ninite"
+Start-ScheduledTask -TaskName "Initial Virtual Machine Setup"
 Start-ScheduledTask -TaskName "Monitor Parsec VDD State"
